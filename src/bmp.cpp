@@ -4,52 +4,41 @@
 #include <stdio.h>
 
 internal void
-WriteBMP(char *String, Image32 Image)
+WriteBMP(char *file_name, Image32 image)
 {
-    u32 PixelsBytes = sizeof(u32)*Image.PixelCount;
+    u32 pixels_bytes = sizeof(u32)*image.pixel_count;
 
-    BMPHeader BMP;// = {};
-    BMP.Type = 0x4D42;
-    BMP.SizeBytes = sizeof(BMP) + PixelsBytes;
-    BMP.Reserved1 = 0;
-    BMP.Reserved2 = 0;
-    BMP.OffsetBytes = sizeof(BMP);
-    BMP.StructSize = sizeof(BMP) - 14;
-    BMP.Width = (s32)Image.Width;
-    BMP.Height = -(s32)Image.Height;
-    BMP.Planes = 1;
-    BMP.BitCount = 32;
-    BMP.Compression = 0;
-    BMP.SizeImage = PixelsBytes;
-    BMP.XPerMeter = 0;
-    BMP.YPerMeter = 0;
-    BMP.ColorsUsed = 0;
-    BMP.ColorsImportant = 0;
+    BMP bmp = {};
 
-#if 0
-    FILE *RefFile = nullptr;
-    fopen_s(&RefFile, "img/ref.bmp", "rb");
-    BMPHeader RefBMP = {};
-    if (RefFile != nullptr)
-    {
-        fread(&RefBMP, sizeof(RefBMP), 1, RefFile);
-        fclose(RefFile);
-    }
-    else
-    {
-        printf("Error: Cannot open file \"%s\"\n", "../img/ref.bmp");
-    }
-#endif
+    bmp.file_header.type = 0x4D42;
+    bmp.file_header.size_bytes = sizeof(bmp) + pixels_bytes;
+    //bmp.file_header.reserved1 = 0;
+    //bmp.file_header.reserved2 = 0;
+    bmp.file_header.offset_bytes = sizeof(bmp);
 
-    FILE *BMPFile = nullptr;
-    fopen_s(&BMPFile, String, "wb");
-    if (BMPFile != nullptr)
+    bmp.info_header.struct_size = sizeof(bmp) - 14;
+    bmp.info_header.width = (s32)image.width;
+    bmp.info_header.height = -(s32)image.height;
+    bmp.info_header.planes = 1;
+    bmp.info_header.bit_count = 32;
+    bmp.info_header.compression = 0;
+    bmp.info_header.size_image = pixels_bytes;
+    //bmp.info_header.x_meter = 0;
+    //bmp.info_header.y_meter = 0;
+    //bmp.info_header.colors_used = 0;
+    //bmp.info_header.colors_important = 0;
+
+
+    FILE *bmp_file= nullptr;
+    fopen_s(&bmp_file, file_name, "wb");
+    if (bmp_file != nullptr)
     {
-        fwrite(&BMP, sizeof(BMP), 1, BMPFile);
-        fwrite(Image.Pixels, Image.PixelBytes, 1, BMPFile);
-        fclose(BMPFile);
+        fwrite(&bmp.file_header, sizeof(bmp.file_header), 1, bmp_file);
+        fwrite(&bmp.info_header, sizeof(bmp.info_header), 1, bmp_file);
+        fwrite(image.pixels, image.pixel_bytes, 1, bmp_file);
+        fclose(bmp_file);
     } else
     {
-        printf("ERROR: Cannot open file \"%s\"\n", String);
+        printf("ERROR: Cannot open file \"%s\"\n", file_name);
     }
 }

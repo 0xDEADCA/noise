@@ -5,17 +5,63 @@
 #include <time.h>
 #include <math.h>
 
-void CreateGradient(Image32 Image)
+RGBA ComposeColor(RGBA acolor, RGBA bcolor, float aweight, float bweight)
 {
-    srand((u32)time(NULL));
-    RGBA StartColor = {u8(rand() % 0x100), u8(rand() % 0x100), u8(rand() % 0x100), 0};//{255-101, 255-152, 255-203, 0x00};
-    RGBA EndColor = {u8(rand() % 0x100), u8(rand() % 0x100), u8(rand() % 0x100), 0};//{101, 152, 203, 0x00};
-    //printf("R: %02X, G: %02X, B: %02X, A: %02X\n", StartColor.R, StartColor.G, StartColor.B, StartColor.A);
-    //printf("R: %02X, G: %02X, B: %02X, A: %02X\n", EndColor.R, EndColor.G, EndColor.B, EndColor.A);
+    RGBA result_color = {};
+    result_color.r = u8((acolor.r*aweight + bcolor.r*bweight));
+    result_color.g = u8((acolor.g*aweight + bcolor.g*bweight));
+    result_color.b = u8((acolor.b*aweight + bcolor.b*bweight));
+    //end_color.a = u8((acolor.a*aweight + bcolor.b*bweight));
+    result_color.a = 0;
+    return (result_color);
+}
 
-    for (uint r = 0; r < Image.Height; r++)
+void CreateCircleGradient(Image32 image)
+{
+    srand((u32)time(nullptr));
+    //RGBA start_color = {u8(rand() % 0x100), u8(rand() % 0x100), u8(rand() % 0x100), 0};
+    //RGBA end_color = {u8(rand() % 0x100), u8(rand() % 0x100), u8(rand() % 0x100), 0};
+
+    RGBA start_color = {u8(rand()), u8(rand()), u8(rand()), 0};
+    RGBA end_color = {u8(rand()), u8(rand()), u8(rand()), 0};
+
+    float max_dist_center = sqrtf(float((image.width /2) * (image.width /2) +
+                                        (image.height/2) * (image.height/2)));
+    u32 half_width = image.width / 2;
+    u32 half_height = image.height / 2;
+
+    for (u32 r = 0; r < image.height; r++)
     {
-        for (uint c = 0; c < Image.Width; c++)
+        for (u32 c = 0; c < image.width; c++)
+        {
+            s32 dist_x = s32(half_width - c);
+            s32 dist_y = s32(half_height - r);
+            s32 dist_x_sq = dist_x*dist_x;
+            s32 dist_y_sq = dist_y*dist_y;
+            float dist_center = sqrtf(float(dist_x_sq + dist_y_sq));
+
+            float percent_gradient = dist_center/max_dist_center;
+            float start_weight = percent_gradient;
+            float end_weight = 1.0f - percent_gradient;
+
+            RGBA pixel_color = ComposeColor(start_color, end_color, start_weight, end_weight);
+            image.pixels[r * image.width + c] = pixel_color;
+        }
+    }
+}
+
+void CreateCornerGradient(Image32 image)
+{
+    srand((u32)time(nullptr));
+    //RGBA start_color = {u8(rand() % 0x100), u8(rand() % 0x100), u8(rand() % 0x100), 0};
+    //RGBA end_color = {u8(rand() % 0x100), u8(rand() % 0x100), u8(rand() % 0x100), 0};
+
+    RGBA start_color = {u8(rand()), u8(rand()), u8(rand()), 0};
+    RGBA end_color = {u8(rand()), u8(rand()), u8(rand()), 0};
+
+    for (uint r = 0; r < image.height; r++)
+    {
+        for (uint c = 0; c < image.width; c++)
         {
             /*
             u32 RedValue = u32(0xFF * r / Image.Height);
@@ -29,17 +75,12 @@ void CreateGradient(Image32 Image)
             u32 RGBValue = StartColor + u32(DiffColor *
                 (r * Image.Width + c) / (Image.Width * Image.Height) / 2.0f);
             */
-            float PercentGradient = float(r+c+1)/float(Image.Height+Image.Width);
-            float StartWeight = 1.0f - PercentGradient;
-            float EndWeight = PercentGradient;
+            float percent_gradient = float(r+c+1)/float(image.height+image.width);
+            float start_weight = 1.0f - percent_gradient;
+            float end_weight = percent_gradient;
             //printf("SW: %.2f, EW: %.2f\n", StartWeight, EndWeight);
-            RGBA PixelColor = {};
-            PixelColor.R = u8((StartColor.R*StartWeight + EndColor.R*EndWeight));
-            PixelColor.G = u8((StartColor.G*StartWeight + EndColor.G*EndWeight));
-            PixelColor.B = u8((StartColor.B*StartWeight + EndColor.B*EndWeight));
-            PixelColor.A = u8(0x00);
-            //printf("R: %02X, G: %02X, B: %02X, A: %02X\n", PixelColor.R, PixelColor.G, PixelColor.B, PixelColor.A);
-            Image.Pixels[r * Image.Width + c] = PixelColor;
+            RGBA pixel_color = ComposeColor(start_color, end_color, start_weight, end_weight);
+            image.pixels[r * image.width + c] = pixel_color;
         }
     }
 }

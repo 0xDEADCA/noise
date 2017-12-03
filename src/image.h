@@ -5,40 +5,40 @@
 
 struct RGBA
 {
-    u8 R;
-    u8 G;
-    u8 B;
-    u8 A;
+    u8 r;
+    u8 g;
+    u8 b;
+    u8 a;
 
     operator u32()
     {
-        return u32((A << 24) | (B << 16) | (G << 8) | (R << 0));
+        return u32((a << 24) | (b << 16) | (g << 8) | (r << 0));
     }
 };
 
 struct RGB
 {
-    u8 R;
-    u8 G;
-    u8 B;
+    u8 r;
+    u8 g;
+    u8 b;
 };
 
 struct Image32
 {
-    u32 Width;
-    u32 Height;
-    u32 PixelCount;
-    u32 PixelBytes;
-    RGBA *Pixels;
+    u32 width;
+    u32 height;
+    u32 pixel_count;
+    u32 pixel_bytes;
+    RGBA *pixels;
 };
 
 struct Image24
 {
-    u32 Width;
-    u32 Height;
-    u32 PixelCount;
-    u32 PixelBytes;
-    RGB *Pixels;
+    u32 width;
+    u32 height;
+    u32 pixel_count;
+    u32 pixel_bytes;
+    RGB *pixels;
 };
 
 #endif
